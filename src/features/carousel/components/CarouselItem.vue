@@ -1,18 +1,18 @@
 <template>
   <img
-    :src="img"
-    :class="['image', { selected: isSelected }]"
+    :src="props.item"
+    :class="['image', { active: isActive }]"
     @click="$emit('click')"
-  >
+  />
 </template>
 
 <script setup lang="ts">
 interface Props {
-  img: string;
-  isSelected?: boolean;
+  item: string;
+  isActive?: boolean;
 }
 
-const { img, isSelected } = defineProps<Props>();
+const props = defineProps<Props>();
 
 defineEmits(["click"]);
 </script>
@@ -33,7 +33,7 @@ defineEmits(["click"]);
     transform: scale(1.05);
   }
 
-  &.selected {
+  &.active {
     box-shadow: 0 0 0 4px #3b82f6;
     transform: scale(0.9);
   }

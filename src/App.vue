@@ -2,33 +2,24 @@
   <div class="app">
     <h1>Image Carousel</h1>
 
-    <div
-      ref="carouselRef"
-      class="carousel"
-    >
+    <div ref="carouselRef" class="carousel">
       <Carousel
-        :images="images"
+        :items="images"
+        :active-items="[...selected]"
         :items-on-view="itemsOnView"
-        @select-change="handleSelect"
+        @item-click="itemClickHandler"
       >
-        <template #item="{ img, selected: isSelected }">
-          <CarouselItem
-            :img="img"
-            :is-selected="isSelected"
-          />
+        <template #item="{ item, isActive }">
+          <CarouselItem :item="item" :is-active="isActive" />
         </template>
         <template #prev-button>
           <div class="button">
-            <div class="button-content">
-              ◀
-            </div>
+            <div class="button-content">◀</div>
           </div>
         </template>
         <template #next-button>
           <div class="button">
-            <div class="button-content">
-              ▶
-            </div>
+            <div class="button-content">▶</div>
           </div>
         </template>
       </Carousel>
@@ -37,12 +28,7 @@
     <div class="selected">
       <h2>Selected Images</h2>
       <div class="list">
-        <img
-          v-for="url in selected"
-          :key="url"
-          :src="url"
-          class="item"
-        >
+        <img v-for="url in [...selected]" :key="url" :src="url" class="item" />
       </div>
     </div>
   </div>
@@ -55,12 +41,8 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const carouselRef = ref();
 const images = ref([]);
-const selected = ref([]);
+const selected = ref(new Set());
 const itemsOnView = ref(0);
-
-function handleSelect({ selected: selectedItems }) {
-  selected.value = selectedItems;
-}
 
 function generateImages(count) {
   return Array.from(
@@ -74,6 +56,22 @@ function updateBreakpoint() {
   const isDesktop = window.matchMedia("(min-width: 768px)").matches;
   if (isMobile) itemsOnView.value = 1;
   if (isDesktop) itemsOnView.value = 4;
+}
+
+function toggleSelectItem(item) {
+  const nextSelected = new Set(selected.value);
+
+  if (nextSelected.has(item)) {
+    nextSelected.delete(item);
+  } else {
+    nextSelected.add(item);
+  }
+
+  selected.value = nextSelected;
+}
+
+function itemClickHandler(item) {
+  toggleSelectItem(item);
 }
 
 onMounted(() => {

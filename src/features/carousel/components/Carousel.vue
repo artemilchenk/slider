@@ -12,14 +12,14 @@
         @transitionend="onTransitionEnd"
       >
         <div
-          v-for="img in loopedImages"
-          :key="img"
+          v-for="item in loopedImages"
+          :key="item"
           class="item"
           :style="{ width: `${itemWidth}%` }"
         >
-          <div @click="onItemClick(img)">
-            <slot name="item" :img="img" :selected="selected.includes(img)">
-              <CarouselItem :img="img" :is-selected="selected.includes(img)" />
+          <div @click="onItemClick(item)">
+            <slot name="item" :item="item" :is-active="activeItems.has(item)">
+              <CarouselItem :item="item" :is-active="activeItems.has(item)" />
             </slot>
           </div>
         </div>
@@ -37,10 +37,14 @@ import { computed, ref, watch } from "vue";
 import CarouselNavButton from "../ui/CarouselNavButton.vue";
 import CarouselItem from "./CarouselItem.vue";
 
-const emit = defineEmits(["selectChange"]);
+const emit = defineEmits(["itemClick"]);
 
 const props = defineProps({
-  images: {
+  items: {
+    type: Array,
+    default: () => [],
+  },
+  activeItems: {
     type: Array,
     default: () => [],
   },
@@ -48,18 +52,18 @@ const props = defineProps({
 });
 
 const index = ref(0);
-const selected = ref([]);
 const itemWidth = computed(() => 100 / props.itemsOnView);
 const loopedImages = ref([]);
 const isAnimating = ref(false);
 const transitionEnabled = ref(true);
 const action = ref("");
 const trackRef = ref(null);
+const activeItems = computed(() => new Set(props.activeItems));
 
 watch(
-  () => props.images,
-  (images) => {
-    loopedImages.value = [...images];
+  () => props.items,
+  (items) => {
+    loopedImages.value = [...items];
   },
   { immediate: true },
 );
@@ -117,28 +121,8 @@ async function onTransitionEnd(event) {
   isAnimating.value = false;
 }
 
-function toggleSelectItem(img) {
-  const isSelected = selected.value.includes(img);
-
-  let nextSelected;
-
-  if (isSelected) {
-    nextSelected = selected.value.filter((i) => i !== img);
-  } else {
-    nextSelected = [...selected.value, img];
-  }
-
-  selected.value = nextSelected;
-
-  emit("selectChange", {
-    item: img,
-    selected: nextSelected,
-    isSelected: !isSelected,
-  });
-}
-
-function onItemClick(img) {
-  toggleSelectItem(img);
+function onItemClick(item) {
+  emit("itemClick", item);
 }
 </script>
 
